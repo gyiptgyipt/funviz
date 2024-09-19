@@ -802,3 +802,21 @@ button:hover{
 	border: none;
 	border-top: none;
 }
+
+
+/* ZYME ADD */
+.rom_container {
+	position: fixed;
+	float: right;
+	background-color: white;  /* Set plain white background */
+	height: 100vh;            /* Full height (100% of the viewport height) */
+	width: 30%;               /* Adjust the width as needed */
+	padding: 20px;
+	position: absolute;       /* If you want to position it to the right */
+	right: 0;
+	top: 0;
+	box-shadow: none;         /* Remove any potential shadow effects */
+	border: none;             /* Ensure there is no border */
+	opacity: 1;               /* Ensure full opacity for plain white */
+  }
+  
