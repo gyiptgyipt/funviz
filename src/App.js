@@ -3,6 +3,7 @@ import './App.css';
 import { useContext, useEffect, useRef , useState } from "react";
 import { RosContext } from "./context/RosContext";
 import VirtualJoystick from "./context/VirtualJoystick";
+import { LidarContext } from "./context/LidarContext";
 import ROSLIB from 'roslib';
 import * as THREE from "three";
 
@@ -15,6 +16,9 @@ function App() {
   const mountRef = useRef();
   const baseRef = useRef();
   const [yaw, setYaw] = useState([]);
+
+  const { lidarData } = useContext(LidarContext); //lidar
+  const lidarPointsRef = useRef([]);
 
   function quaternionToYaw(quaternion) {
     const { x, y, z, w } = quaternion;
@@ -35,6 +39,16 @@ function App() {
     // Create the material for the lines
     const lineMaterial_red = new THREE.LineBasicMaterial({ color: 0xff0000 });
     const lineMaterial_green = new THREE.LineBasicMaterial({ color: 0x008000 });
+
+    //Lidar material for viz
+    const lidarGeometry = new THREE.BufferGeometry();
+    const lidarMaterial = new THREE.PointsMaterial({ color: 0x00ff00, size: 0.05 });
+    const lidarPoints = new THREE.Points(lidarGeometry, lidarMaterial);
+    scene.add(lidarPoints);
+    lidarPointsRef.current = lidarGeometry;
+
+    scene.add(lidarPoints);
+    lidarPointsRef.current = lidarGeometry;
 
 
     // Define the geometry for the horizontal line
@@ -135,6 +149,17 @@ function App() {
   }
   },[baseFootprint])
 
+
+  useEffect(() => { // lidar hook
+    if (lidarPointsRef.current && lidarData.length > 0) {
+      const positions = new Float32Array(lidarData.flatMap((point) => [point.x, point.y, point.z]));
+      lidarPointsRef.current.setAttribute(
+        "position",
+        new THREE.BufferAttribute(positions, 3)
+      );
+      lidarPointsRef.current.computeBoundingSphere();
+    }
+  }, [lidarData]);
 
 
   const handleJoystickMove = ({ linear, angular }) => {
