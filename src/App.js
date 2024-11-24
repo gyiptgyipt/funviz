@@ -14,7 +14,12 @@ function App() {
   const [baseFootprint, setBaseFootprint] = useState([]);
   const mountRef = useRef();
   const baseRef = useRef();
+  const [yaw, setYaw] = useState([]);
 
+  function quaternionToYaw(quaternion) {
+    const { x, y, z, w } = quaternion;
+    return Math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
+  }
 
   useEffect(() => { //useffect subscribe hook
     // Initialize Three.js scene
@@ -97,7 +102,10 @@ function App() {
     });
     odomTopic.subscribe((message) => {
       // console.log(message);
+      const yawCalculate = quaternionToYaw(message.pose.pose.orientation);
+      yaw.current = yawCalculate;
       setBaseFootprint(message.pose.pose);
+      
       // console.log(baseFootprint)
       // Add TF visualization logic here.
       
@@ -115,10 +123,7 @@ function App() {
       if (baseRef.current){
         baseRef.current.position.x = baseFootprint.position.x;
         baseRef.current.position.y = baseFootprint.position.y;
-        baseRef.current.position.z = baseFootprint.position.z;
-        baseRef.current.rotation.x = baseFootprint.orientation.x;
-        baseRef.current.rotation.y = baseFootprint.orientation.y;
-        baseRef.current.rotation.z = baseFootprint.orientation.z;
+        baseRef.current.rotation.z = yaw.current;
         // console.log(baseRef.current.position.x);
       }
       requestAnimationFrame(animationFrame);
