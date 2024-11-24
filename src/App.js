@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import { useContext, useEffect, useRef , useState } from "react";
 import { RosContext } from "./context/RosContext";
+import VirtualJoystick from "./context/VirtualJoystick";
 import ROSLIB from 'roslib';
 import * as THREE from "three";
 
@@ -118,7 +119,7 @@ function App() {
         baseRef.current.rotation.x = baseFootprint.orientation.x;
         baseRef.current.rotation.y = baseFootprint.orientation.y;
         baseRef.current.rotation.z = baseFootprint.orientation.z;
-        console.log(baseRef.current.position.x);
+        // console.log(baseRef.current.position.x);
       }
       requestAnimationFrame(animationFrame);
     }
@@ -130,9 +131,22 @@ function App() {
   },[baseFootprint])
 
 
+
+  const handleJoystickMove = ({ linear, angular }) => {
+    console.log(`Linear: ${linear}, Angular: ${angular}`);
+    // Use ROSLIB to send commands to /cmd_vel or other topics here
+  };
+
+  const handleJoystickEnd = () => {
+    console.log("Joystick released");
+    // Stop the robot's movement here
+  };
+
+
   return (
     <div className="App">
       <div ref={mountRef} style={{ width: "100vw", height: "100vh" }}></div>
+      <VirtualJoystick onMove={handleJoystickMove} onEnd={handleJoystickEnd} />
     </div>
   );
 }
