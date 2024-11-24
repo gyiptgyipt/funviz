@@ -35,8 +35,8 @@ const VirtualJoystick = ({ rosUrl = "ws://localhost:9090" }) => {
     // Event listeners for joystick
     joystick.on("move", (evt, data) => {
       if (data.vector) {
-        const linear = parseFloat(data.vector.y.toFixed(2)); // Forward/Backward
-        const angular = parseFloat(data.vector.x.toFixed(2)); // Left/Right
+        const linear = parseFloat(data.vector.x.toFixed(2)); // Forward/Backward
+        const angular = parseFloat(data.vector.y.toFixed(2)); // Left/Right
 
         // Create and publish the Twist message
         const twist = new ROSLIB.Message({
