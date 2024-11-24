@@ -34,7 +34,7 @@ function App() {
     // Define the geometry for the horizontal line
     const horizontalGeometry = new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(0, 0, 0), // Start point
-        new THREE.Vector3(2, 0, 0),  // End point
+        new THREE.Vector3(0.5, 0, 0),  // End point
     ]);
     const horizontalLine = new THREE.Line(horizontalGeometry, lineMaterial_red);  // အလျားလိုက်
 
@@ -43,7 +43,7 @@ function App() {
     // Define the geometry for the vertical line
     const verticalGeometry = new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(0, 0, 0), // Start point
-        new THREE.Vector3(0, 2, 0),  // End point
+        new THREE.Vector3(0, 0.5, 0),  // End point
     ]);
     const verticalLine = new THREE.Line(verticalGeometry, lineMaterial_green); //ဒေါင်လိုက်
     const verticalLineOdom = new THREE.Line(verticalGeometry, lineMaterial_green); //ဒေါင်လိုက်
