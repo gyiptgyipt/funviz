@@ -66,10 +66,10 @@ const VirtualJoystick = ({ rosUrl = "ws://localhost:9090" }) => {
       ref={joystickRef}
       style={{
         position: "absolute",
-        bottom: "20px",
-        left: "20px",
-        width: "150px",
-        height: "150px",
+        bottom: "40px",
+        left: "40px",
+        width: "300px",
+        height: "300px",
       }}
     ></div>
   );
