@@ -28,15 +28,15 @@ const VirtualJoystick = ({ rosUrl = "ws://localhost:9090" }) => {
     const joystick = nipplejs.create({
       zone: joystickRef.current, // Attach to the container
       mode: "static",
-      position: { left: "50px", bottom: "50px" }, // Position on screen
+      position: { right: "50px", bottom: "50px" }, // Position on screen
       color: "blue",
     });
 
     // Event listeners for joystick
     joystick.on("move", (evt, data) => {
       if (data.vector) {
-        const linear = parseFloat(data.vector.x.toFixed(2)); // Forward/Backward
-        const angular = parseFloat(data.vector.y.toFixed(2)); // Left/Right
+        const linear = parseFloat(data.vector.y.toFixed(2)); // Forward/Backward
+        const angular = parseFloat(data.vector.x.toFixed(2)); // Left/Right
 
         // Create and publish the Twist message
         const twist = new ROSLIB.Message({
@@ -67,9 +67,9 @@ const VirtualJoystick = ({ rosUrl = "ws://localhost:9090" }) => {
       style={{
         position: "absolute",
         bottom: "40px",
-        left: "40px",
-        width: "300px",
-        height: "300px",
+        right: "40px",
+        width: "400px",
+        height: "400px",
       }}
     ></div>
   );

@@ -1,5 +1,9 @@
 import './App.css';
 import { useContext, useEffect, useRef } from "react";
+
+import NavPanel from "./components/NavPanel"; //css
+import { Routes, Route } from "react-router-dom";
+
 import { RosContext } from "./context/RosContext";
 import VirtualJoystick from "./context/VirtualJoystick";
 import { LidarContext } from "./context/LidarContext";
@@ -18,6 +22,10 @@ function App() {
   const tfGroupsRef = useRef({});
   const lidarPointsRef = useRef([]);
   const rendererRef = useRef(null);
+
+
+  const Home = () => <h1>Home Page</h1>; //navpanel
+  const About = () => <h1>About Page</h1>;
 
   const camhigh = 8;
 
@@ -91,24 +99,17 @@ function App() {
       messageType: "tf2_msgs/TFMessage",
     });
   
-    let baseFootprintTransform = null;
-  
     tfListener.subscribe((message) => {
       message.transforms.forEach((transform) => {
         const { translation, rotation } = transform.transform;
         const { child_frame_id } = transform;
   
-        if (child_frame_id === "base_footprint") {
-          baseFootprintTransform = {
-            position: translation,
-            rotation: new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w),
-          };
-        }
-  
         if (!tfGroupsRef.current[child_frame_id]) {
+          // Create a new group for the TF frame if it doesn't exist
           const group = new THREE.Group();
           tfGroupsRef.current[child_frame_id] = group;
   
+          // Add visual indicators to the TF frame
           const horizontalLine = new THREE.Line(
             new THREE.BufferGeometry().setFromPoints([
               new THREE.Vector3(0, 0, 0),
@@ -127,46 +128,23 @@ function App() {
           group.add(horizontalLine);
           group.add(verticalLine);
   
-          sceneRef.current.add(group);
+          sceneRef.current.add(group); // Add the group to the scene
         }
   
+        // Update the position and rotation of the group
         const group = tfGroupsRef.current[child_frame_id];
         if (group) {
           group.position.set(translation.x, translation.y, translation.z);
-          group.rotation.setFromQuaternion(
-            new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w)
-          );
+          group.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
         }
       });
     });
-  
-    const animate = () => {
-      requestAnimationFrame(animate);
-  
-      const renderer = rendererRef.current;
-      const scene = sceneRef.current;
-      const camera = cameraRef.current;
-  
-      if (renderer && scene && camera) {
-        const baseFootprintGroup = tfGroupsRef.current["base_footprint"];
-        if (baseFootprintGroup && baseFootprintTransform) {
-          baseFootprintGroup.position.set(
-            baseFootprintTransform.position.x,
-            baseFootprintTransform.position.y,
-            baseFootprintTransform.position.z
-          );
-          baseFootprintGroup.setRotationFromQuaternion(baseFootprintTransform.rotation);
-        }
-  
-        renderer.render(scene, camera);
-      }
-    };
-    animate();
   
     return () => {
       tfListener.unsubscribe();
     };
   }, [ros]);
+  
 
   useEffect(() => {
     if (lidarPointsRef.current && lidarData.length > 0) {
@@ -201,6 +179,12 @@ function App() {
       onMouseMove={updateDrag}
       onMouseUp={endDrag}
     >
+      <NavPanel />
+      <div style={{ padding: "0px" }}>
+        <Routes>
+
+        </Routes>
+      </div>
       <div ref={mountRef} style={{ width: "100vw", height: "100vh" }}></div>
       <VirtualJoystick onMove={handleJoystickMove} onEnd={handleJoystickEnd} />
     </div>
