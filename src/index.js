@@ -13,7 +13,9 @@ root.render(
     <BrowserRouter>
       <LidarProvider>
       <CameraProvider>
+      
     <App />
+      
       </CameraProvider>
       </LidarProvider>
     </BrowserRouter>

@@ -37,11 +37,12 @@ const VirtualJoystick = ({ rosUrl = "ws://localhost:9090" }) => {
       if (data.vector) {
         const linear = parseFloat(data.vector.y.toFixed(2)); // Forward/Backward
         const angular = parseFloat(data.vector.x.toFixed(2)); // Left/Right
+        const inverse_angular = -angular;
 
         // Create and publish the Twist message
         const twist = new ROSLIB.Message({
           linear: { x: linear, y: 0, z: 0 },
-          angular: { x: 0, y: 0, z: angular },
+          angular: { x: 0, y: 0, z: inverse_angular },
         });
         cmdVelTopic.current.publish(twist);
       }
