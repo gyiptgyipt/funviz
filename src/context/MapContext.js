@@ -17,16 +17,23 @@ export const MapProvider = ({ children }) => {
       messageType: "nav_msgs/msg/OccupancyGrid",
     });
 
+    // Subscribe to the topic
     mapTopic.subscribe((message) => {
-      setMapData(message);
-      
+      setMapData(message); // Update mapData state
     });
 
-    console.log(mapData);                                           // map data getter setter error
+    // Cleanup on unmount
     return () => {
       mapTopic.unsubscribe();
     };
   }, [ros]);
+
+  // Use another useEffect to monitor mapData changes
+  useEffect(() => {
+    if (mapData) {
+      // console.log("Updated map data:", mapData); // Log updated mapData
+    }
+  }, [mapData]);
 
   return (
     <MapContext.Provider value={{ mapData }}>

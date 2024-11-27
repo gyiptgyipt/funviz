@@ -26,7 +26,7 @@ function App() {
   const rendererRef = useRef(null);
 
   // const { mapData } = useContext(MapContext);
-  const mapData = useContext(MapContext);
+  const {mapData} = useContext(MapContext);
   const mapMeshRef = useRef(null);
 
 
@@ -34,57 +34,51 @@ function App() {
   // const About = () => <h1>About Page</h1>;
 
   const camhigh = 8;
-
   
-
-  // useEffect(() => { //map_hook
-  //   console.log(mapData);
-  //   if (!mapData) return;
-  //   const { width, height, resolution, origin } = mapData.info;
-  //   const data = mapData.data;
-
-  //   const gridWidth = width * resolution;
-  //   const gridHeight = height * resolution;
-
-  //   // Create a plane geometry for the map
-  //   const geometry = new THREE.PlaneGeometry(gridWidth, gridHeight, width, height);
-  //   const material = new THREE.MeshBasicMaterial({ vertexColors: true });
-
-  //   // Assign colors based on occupancy data
-  //   const colors = [];
-  //   data.forEach((value) => {
-  //     if (value === -1) {
-  //       // Unknown (set to grey)
-  //       colors.push(0.5, 0.5, 0.5);
-  //     } else if (value === 0) {
-  //       // Free (set to white)
-  //       colors.push(1, 1, 1);
-  //     } else {
-  //       // Occupied (set to black)
-  //       colors.push(0, 0, 0);
-  //     }
-  //   });
-
-  //   const colorAttribute = new THREE.BufferAttribute(new Float32Array(colors), 3);
-  //   geometry.setAttribute("color", colorAttribute);
-
-  //   const mapMesh = new THREE.Mesh(geometry, material);
-  //   mapMesh.rotation.x = -Math.PI / 2; // Align with the XY plane
-  //   mapMesh.position.set(origin.position.x, origin.position.y, 0);
-
-  //   // Remove the previous map and add the new one
-  //   if (mapMeshRef.current) {
-  //     sceneRef.current.remove(mapMeshRef.current);
-  //   }
-  //   sceneRef.current.add(mapMesh);
-  //   mapMeshRef.current = mapMesh;
+  // Map Visualization Effect
+  useEffect(() => {
+    if (!mapData || !mapData.info) return;
+  
+    const { width, height, resolution } = mapData.info;
+    const gridData = mapData.data; // 1D array of occupancy values (-1, 0-100)
+  
+    // Create Plane Geometry for the Map
+    const mapGeometry = new THREE.PlaneGeometry(width * resolution, height * resolution, width, height);
+    const mapMaterial = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
+    const mapMesh = new THREE.Mesh(mapGeometry, mapMaterial);
+  
+    // Add Colors Based on Map Data
+    const colors = new Float32Array((width + 1) * (height + 1) * 3); // Each vertex needs R, G, B
+    gridData.forEach((value, index) => {
+      let color;
+      if (value === -1) {
+        color = new THREE.Color(0.5, 0.5, 0.5); // Unknown (gray)
+      } else if (value === 0) {
+        color = new THREE.Color(1, 1, 1); // Free (green)
+      } else {
+        color = new THREE.Color(0, 0, 0); // Occupied (red)
+      }
+      const i = index * 3; // R, G, B for each vertex
+      colors[i] = color.r;
+      colors[i + 1] = color.g;
+      colors[i + 2] = color.b;
+    });
     
-  // }, [mapData]);
-
+    // Ensure the colors attribute is applied correctly
+    mapGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    // mapMesh.rotation.x = -Math.PI / 2; // Lie flat on the XY-plane
+    mapMesh.position.set(0, 0, 0);
   
+    // Add or Replace Map Mesh in the Scene
+    if (mapMeshRef.current) {
+      sceneRef.current.remove(mapMeshRef.current);
+    }
+    sceneRef.current.add(mapMesh);
+    mapMeshRef.current = mapMesh;
+  }, [mapData]);
 
   useEffect(() => {
-    // Initialize Three.js scene
+                                              // Initialize Three.js scene
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x888888);
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -134,6 +128,7 @@ function App() {
         group.updateMatrixWorld(); // Ensure updates propagate to the scene graph
       });
 
+
       renderer.render(scene, camera);
     };
     animate();
@@ -157,6 +152,20 @@ function App() {
       message.transforms.forEach((transform) => {
         const { translation, rotation } = transform.transform;
         const { child_frame_id } = transform;
+
+
+        if (child_frame_id === "odom") {
+          // Extract position and rotation of the odom frame
+          const odomPosition = {
+            x: translation.x,
+            y: translation.y,
+            z: translation.z,
+          };
+          if (cameraRef.current) {
+            const camera = cameraRef.current;
+            camera.position.set(odomPosition.x, odomPosition.y, camhigh); // Adjust z-axis height with `camhigh`
+          }
+        }
   
         if (!tfGroupsRef.current[child_frame_id]) {
           // Create a new group for the TF frame if it doesn't exist
@@ -191,6 +200,8 @@ function App() {
           group.position.set(translation.x, translation.y, translation.z);
           group.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
         }
+
+        
       });
     });
   
@@ -237,14 +248,15 @@ function App() {
     >
       <NavPanel />
       <div style={{ padding: "0px" }}>
-        {/* <Routes>   // for more switch 
-
-        </Routes> */}
-      </div>
-
-      <MapProvider>
+        {/* {/* <Routes>   // for more switch  */}
+        <MapProvider>
 
       </MapProvider>
+
+        {/* </Routes> */}
+      </div>
+
+      
       <div ref={mountRef} style={{ width: "100vw", height: "100vh" }}></div>
       <VirtualJoystick onMove={handleJoystickMove} onEnd={handleJoystickEnd} />
     </div>
