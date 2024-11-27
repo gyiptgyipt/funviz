@@ -14,7 +14,7 @@ import * as THREE from "three";
 function App() {
   const ros = useContext(RosContext);
   const { lidarData } = useContext(LidarContext);
-  const { cameraPosition, startDrag, updateDrag, endDrag } = useContext(CameraContext);
+  const { cameraPosition, startDrag, updateDrag, endDrag , cameraRotation } = useContext(CameraContext);
 
   const mountRef = useRef();
   const cameraRef = useRef(null);
@@ -161,8 +161,9 @@ function App() {
     const camera = cameraRef.current;
     if (camera) {
       camera.position.set(cameraPosition.x, cameraPosition.y, camhigh);
+      camera.rotation.set( 0, 0, cameraRotation.x);
     }
-  }, [cameraPosition]);
+  }, [cameraPosition,cameraRotation]);
 
   const handleJoystickMove = ({ linear, angular }) => {
     console.log(`Linear: ${linear}, Angular: ${angular}`);

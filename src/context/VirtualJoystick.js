@@ -69,8 +69,8 @@ const VirtualJoystick = ({ rosUrl = "ws://localhost:9090" }) => {
         position: "absolute",
         bottom: "40px",
         right: "40px",
-        width: "400px",
-        height: "400px",
+        width: "100px",
+        height: "100px",
       }}
     ></div>
   );
