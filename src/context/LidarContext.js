@@ -14,7 +14,7 @@ export const LidarProvider = ({ children }) => {
     const lidarTopic = new ROSLIB.Topic({
       ros,
       name: "/scan", // Replace with your LIDAR topic name
-      messageType: "sensor_msgs/LaserScan",
+      messageType: "sensor_msgs/msg/LaserScan",
     });
 
     const handleLidarMessage = (message) => {

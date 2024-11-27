@@ -15,7 +15,7 @@ const VirtualJoystick = ({ rosUrl = "ws://localhost:9090" }) => {
     cmdVelTopic.current = new ROSLIB.Topic({
       ros: ros.current,
       name: "/cmd_vel",
-      messageType: "geometry_msgs/Twist",
+      messageType: "geometry_msgs/msg/Twist",
     });
 
     return () => {

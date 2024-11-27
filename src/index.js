@@ -4,6 +4,7 @@ import App from "./App";
 import { RosProvider } from "./context/RosContext";
 import { LidarProvider } from "./context/LidarContext";
 import { CameraProvider } from "./context/CameraContext";
+import { MapProvider } from './context/MapContext';
 
 import { BrowserRouter } from "react-router-dom"; //navpanel
 
@@ -13,9 +14,11 @@ root.render(
     <BrowserRouter>
       <LidarProvider>
       <CameraProvider>
+        <MapProvider>
       
     <App />
       
+      </MapProvider>
       </CameraProvider>
       </LidarProvider>
     </BrowserRouter>

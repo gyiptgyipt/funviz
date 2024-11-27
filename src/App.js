@@ -2,12 +2,14 @@ import './App.css';
 import { useContext, useEffect, useRef } from "react";
 
 import NavPanel from "./components/NavPanel"; //css
-import { Routes, Route } from "react-router-dom";
 
 import { RosContext } from "./context/RosContext";
 import VirtualJoystick from "./context/VirtualJoystick";
 import { LidarContext } from "./context/LidarContext";
 import { CameraContext } from "./context/CameraContext";
+import { MapProvider, MapContext } from "./context/MapContext";
+
+
 import ROSLIB from 'roslib';
 import * as THREE from "three";
 
@@ -23,11 +25,63 @@ function App() {
   const lidarPointsRef = useRef([]);
   const rendererRef = useRef(null);
 
+  // const { mapData } = useContext(MapContext);
+  const mapData = useContext(MapContext);
+  const mapMeshRef = useRef(null);
 
-  const Home = () => <h1>Home Page</h1>; //navpanel
-  const About = () => <h1>About Page</h1>;
+
+  // const Home = () => <h1>Home Page</h1>; //navpanel
+  // const About = () => <h1>About Page</h1>;
 
   const camhigh = 8;
+
+  
+
+  // useEffect(() => { //map_hook
+  //   console.log(mapData);
+  //   if (!mapData) return;
+  //   const { width, height, resolution, origin } = mapData.info;
+  //   const data = mapData.data;
+
+  //   const gridWidth = width * resolution;
+  //   const gridHeight = height * resolution;
+
+  //   // Create a plane geometry for the map
+  //   const geometry = new THREE.PlaneGeometry(gridWidth, gridHeight, width, height);
+  //   const material = new THREE.MeshBasicMaterial({ vertexColors: true });
+
+  //   // Assign colors based on occupancy data
+  //   const colors = [];
+  //   data.forEach((value) => {
+  //     if (value === -1) {
+  //       // Unknown (set to grey)
+  //       colors.push(0.5, 0.5, 0.5);
+  //     } else if (value === 0) {
+  //       // Free (set to white)
+  //       colors.push(1, 1, 1);
+  //     } else {
+  //       // Occupied (set to black)
+  //       colors.push(0, 0, 0);
+  //     }
+  //   });
+
+  //   const colorAttribute = new THREE.BufferAttribute(new Float32Array(colors), 3);
+  //   geometry.setAttribute("color", colorAttribute);
+
+  //   const mapMesh = new THREE.Mesh(geometry, material);
+  //   mapMesh.rotation.x = -Math.PI / 2; // Align with the XY plane
+  //   mapMesh.position.set(origin.position.x, origin.position.y, 0);
+
+  //   // Remove the previous map and add the new one
+  //   if (mapMeshRef.current) {
+  //     sceneRef.current.remove(mapMeshRef.current);
+  //   }
+  //   sceneRef.current.add(mapMesh);
+  //   mapMeshRef.current = mapMesh;
+    
+  // }, [mapData]);
+
+  
 
   useEffect(() => {
     // Initialize Three.js scene
@@ -174,6 +228,7 @@ function App() {
   };
 
   return (
+    
     <div
       className="App"
       onMouseDown={startDrag}
@@ -182,13 +237,18 @@ function App() {
     >
       <NavPanel />
       <div style={{ padding: "0px" }}>
-        <Routes>
+        {/* <Routes>   // for more switch 
 
-        </Routes>
+        </Routes> */}
       </div>
+
+      <MapProvider>
+
+      </MapProvider>
       <div ref={mountRef} style={{ width: "100vw", height: "100vh" }}></div>
       <VirtualJoystick onMove={handleJoystickMove} onEnd={handleJoystickEnd} />
     </div>
+    
   );
 }
 
