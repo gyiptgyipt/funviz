@@ -1,75 +1,62 @@
 import './App.css';
 import { useContext, useEffect, useRef } from "react";
 
-import NavPanel from "./components/NavPanel"; //css
-
+import NavPanel from "./components/NavPanel";
 import { RosContext } from "./context/RosContext";
 import VirtualJoystick from "./context/VirtualJoystick";
 import { LidarContext } from "./context/LidarContext";
 import { CameraContext } from "./context/CameraContext";
 import { MapProvider, MapContext } from "./context/MapContext";
+import { TFProvider } from "./context/TFContext";
 
-
-import ROSLIB from 'roslib';
 import * as THREE from "three";
 
 function App() {
   const ros = useContext(RosContext);
   const { lidarData } = useContext(LidarContext);
-  const { cameraPosition, startDrag, updateDrag, endDrag , cameraRotation } = useContext(CameraContext);
+  const { cameraPosition, startDrag, updateDrag, endDrag, cameraRotation } = useContext(CameraContext);
 
   const mountRef = useRef();
   const cameraRef = useRef(null);
   const sceneRef = useRef(null);
-  const tfGroupsRef = useRef({});
   const lidarPointsRef = useRef([]);
   const rendererRef = useRef(null);
 
-  // const { mapData } = useContext(MapContext);
-  const {mapData} = useContext(MapContext);
+  const { mapData } = useContext(MapContext);
   const mapMeshRef = useRef(null);
 
+  const camHigh = 8;
 
-  // const Home = () => <h1>Home Page</h1>; //navpanel
-  // const About = () => <h1>About Page</h1>;
-
-  const camhigh = 8;
-  
   // Map Visualization Effect
   useEffect(() => {
     if (!mapData || !mapData.info) return;
-  
+
     const { width, height, resolution } = mapData.info;
-    const gridData = mapData.data; // 1D array of occupancy values (-1, 0-100)
-  
-    // Create Plane Geometry for the Map
+    const gridData = mapData.data;
+
     const mapGeometry = new THREE.PlaneGeometry(width * resolution, height * resolution, width, height);
     const mapMaterial = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
     const mapMesh = new THREE.Mesh(mapGeometry, mapMaterial);
-  
-    // Add Colors Based on Map Data
-    const colors = new Float32Array((width + 1) * (height + 1) * 3); // Each vertex needs R, G, B
+
+    const colors = new Float32Array((width + 1) * (height + 1) * 3);
     gridData.forEach((value, index) => {
       let color;
       if (value === -1) {
-        color = new THREE.Color(0.5, 0.5, 0.5); // Unknown (gray)
+        color = new THREE.Color(0.5, 0.5, 0.5);
       } else if (value === 0) {
-        color = new THREE.Color(1, 1, 1); // Free (green)
+        color = new THREE.Color(1, 1, 1);
       } else {
-        color = new THREE.Color(0, 0, 0); // Occupied (red)
+        color = new THREE.Color(0, 0, 0);
       }
-      const i = index * 3; // R, G, B for each vertex
+      const i = index * 3;
       colors[i] = color.r;
       colors[i + 1] = color.g;
       colors[i + 2] = color.b;
     });
-    
-    // Ensure the colors attribute is applied correctly
+
     mapGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-    // mapMesh.rotation.x = -Math.PI / 2; // Lie flat on the XY-plane
     mapMesh.position.set(0, 0, 0);
-  
-    // Add or Replace Map Mesh in the Scene
+
     if (mapMeshRef.current) {
       sceneRef.current.remove(mapMeshRef.current);
     }
@@ -77,8 +64,8 @@ function App() {
     mapMeshRef.current = mapMesh;
   }, [mapData]);
 
+  // Scene Initialization
   useEffect(() => {
-                                              // Initialize Three.js scene
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x888888);
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -90,21 +77,13 @@ function App() {
     mountRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Initial camera position
-    camera.position.set(cameraPosition.x, cameraPosition.y, camhigh); // Camera position
+    // camera.position.set(cameraPosition.x, cameraPosition.y, camHigh);
 
-    // Add grid helper to the scene
-    // const gridHelper = new THREE.GridHelper(8, 8, 0x444444, 0x888888); // 8x8 grid with 1m cells
-    // gridHelper.position.set(0, 0, 0); // Center grid at origin
-    // scene.add(gridHelper);
-
-    // Add grid helper to the scene
-    const gridHelper = new THREE.GridHelper(8, 8, 0x000000, 0x000000); // 8x8 grid with 1m cells, black grid color
-    gridHelper.rotation.x = Math.PI / 2; // Rotate grid to lie flat on the X-Y plane
-    gridHelper.position.set(0, 0, 0); // Center grid at origin
+    const gridHelper = new THREE.GridHelper(8, 8, 0x000000, 0x000000);
+    gridHelper.rotation.x = Math.PI / 2;
+    gridHelper.position.set(0, 0, 0);
     scene.add(gridHelper);
 
-    // Handle window resize
     const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -112,23 +91,14 @@ function App() {
     };
     window.addEventListener("resize", handleResize);
 
-    // Lidar visualization
     const lidarGeometry = new THREE.BufferGeometry();
     const lidarMaterial = new THREE.PointsMaterial({ color: 0xff0000, size: 0.05 });
     const lidarPoints = new THREE.Points(lidarGeometry, lidarMaterial);
     scene.add(lidarPoints);
     lidarPointsRef.current = lidarGeometry;
 
-    // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
-
-      // Animate TF groups
-      Object.values(tfGroupsRef.current).forEach((group) => {
-        group.updateMatrixWorld(); // Ensure updates propagate to the scene graph
-      });
-
-
       renderer.render(scene, camera);
     };
     animate();
@@ -138,78 +108,6 @@ function App() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
-  useEffect(() => {
-    if (!ros) return;
-  
-    const tfListener = new ROSLIB.Topic({
-      ros,
-      name: "/tf",
-      messageType: "tf2_msgs/TFMessage",
-    });
-  
-    tfListener.subscribe((message) => {
-      message.transforms.forEach((transform) => {
-        const { translation, rotation } = transform.transform;
-        const { child_frame_id } = transform;
-
-
-        if (child_frame_id === "odom") {
-          // Extract position and rotation of the odom frame
-          const odomPosition = {
-            x: translation.x,
-            y: translation.y,
-            z: translation.z,
-          };
-          if (cameraRef.current) {
-            const camera = cameraRef.current;
-            camera.position.set(odomPosition.x, odomPosition.y, camhigh); // Adjust z-axis height with `camhigh`
-          }
-        }
-  
-        if (!tfGroupsRef.current[child_frame_id]) {
-          // Create a new group for the TF frame if it doesn't exist
-          const group = new THREE.Group();
-          tfGroupsRef.current[child_frame_id] = group;
-  
-          // Add visual indicators to the TF frame
-          const horizontalLine = new THREE.Line(
-            new THREE.BufferGeometry().setFromPoints([
-              new THREE.Vector3(0, 0, 0),
-              new THREE.Vector3(0.3, 0, 0),
-            ]),
-            new THREE.LineBasicMaterial({ color: 0xff0000 })
-          );
-          const verticalLine = new THREE.Line(
-            new THREE.BufferGeometry().setFromPoints([
-              new THREE.Vector3(0, 0, 0),
-              new THREE.Vector3(0, 0.3, 0),
-            ]),
-            new THREE.LineBasicMaterial({ color: 0x00ff00 })
-          );
-  
-          group.add(horizontalLine);
-          group.add(verticalLine);
-  
-          sceneRef.current.add(group); // Add the group to the scene
-        }
-  
-        // Update the position and rotation of the group
-        const group = tfGroupsRef.current[child_frame_id];
-        if (group) {
-          group.position.set(translation.x, translation.y, translation.z);
-          group.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
-        }
-
-        
-      });
-    });
-  
-    return () => {
-      tfListener.unsubscribe();
-    };
-  }, [ros]);
-  
 
   useEffect(() => {
     if (lidarPointsRef.current && lidarData.length > 0) {
@@ -225,10 +123,10 @@ function App() {
   useEffect(() => {
     const camera = cameraRef.current;
     if (camera) {
-      camera.position.set(cameraPosition.x, cameraPosition.y, camhigh);
-      camera.rotation.set( 0, 0, cameraRotation.x);
+      camera.position.set(cameraPosition.x, cameraPosition.y, camHigh);
+      camera.rotation.set(0, 0, cameraRotation.x);
     }
-  }, [cameraPosition,cameraRotation]);
+  }, [cameraPosition, cameraRotation]);
 
   const handleJoystickMove = ({ linear, angular }) => {
     console.log(`Linear: ${linear}, Angular: ${angular}`);
@@ -239,28 +137,18 @@ function App() {
   };
 
   return (
-    
-    <div
-      className="App"
-      onMouseDown={startDrag}
-      onMouseMove={updateDrag}
-      onMouseUp={endDrag}
-    >
-      <NavPanel />
-      <div style={{ padding: "0px" }}>
-        {/* {/* <Routes>   // for more switch  */}
-        <MapProvider>
-
-      </MapProvider>
-
-        {/* </Routes> */}
+    <TFProvider ros={ros} sceneRef={sceneRef} cameraRef={cameraRef}>
+      <div
+        className="App"
+        onMouseDown={startDrag}
+        onMouseMove={updateDrag}
+        onMouseUp={endDrag}
+      >
+        <NavPanel />
+        <div ref={mountRef} style={{ width: "100vw", height: "100vh" }}></div>
+        <VirtualJoystick onMove={handleJoystickMove} onEnd={handleJoystickEnd} />
       </div>
-
-      
-      <div ref={mountRef} style={{ width: "100vw", height: "100vh" }}></div>
-      <VirtualJoystick onMove={handleJoystickMove} onEnd={handleJoystickEnd} />
-    </div>
-    
+    </TFProvider>
   );
 }
 
