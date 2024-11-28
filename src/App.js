@@ -55,7 +55,7 @@ function App() {
     });
 
     mapGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-    mapMesh.position.set(0, 0, 0);
+    mapMesh.position.set(0, 0, 0);                // tf map frame position ထည့်ရန်
 
     if (mapMeshRef.current) {
       sceneRef.current.remove(mapMeshRef.current);

@@ -10,6 +10,7 @@ export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
   useEffect(() => {
     if (!ros) return;
 
+    // Dynamic transform listener
     const tfListener = new ROSLIB.Topic({
       ros,
       name: "/tf",
@@ -20,6 +21,8 @@ export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
       message.transforms.forEach((transform) => {
         const { translation, rotation } = transform.transform;
         const { child_frame_id } = transform;
+
+        console.log("Dynamic Transform:", transform);
 
         // If "odom" frame, update camera origin
         if (child_frame_id === "odom" && cameraRef.current) {
@@ -65,8 +68,60 @@ export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
       });
     });
 
+    // Static transform listener
+    const tfStaticListener = new ROSLIB.Topic({
+      ros,
+      name: "/tf_static",
+      messageType: "tf2_msgs/TFMessage",
+    });
+
+    tfStaticListener.subscribe((message) => {
+      message.transforms.forEach((transform) => {
+        const { translation, rotation } = transform.transform;
+        const { child_frame_id } = transform;
+
+        console.log("Static Transform:", transform);
+
+        // Manage TF groups in the scene
+        if (!tfGroupsRef.current[child_frame_id]) {
+          const group = new THREE.Group();
+          tfGroupsRef.current[child_frame_id] = group;
+
+          const horizontalLine = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+              new THREE.Vector3(0, 0, 0),
+              new THREE.Vector3(0.3, 0, 0),
+            ]),
+            new THREE.LineBasicMaterial({ color: 0xff0000 })
+          );
+          const verticalLine = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+              new THREE.Vector3(0, 0, 0),
+              new THREE.Vector3(0, 0.3, 0),
+            ]),
+            new THREE.LineBasicMaterial({ color: 0x00ff00 })
+          );
+
+          group.add(horizontalLine);
+          group.add(verticalLine);
+
+          if (sceneRef.current) {
+            sceneRef.current.add(group);
+          }
+        }
+
+        // Update TF group position and rotation
+        const group = tfGroupsRef.current[child_frame_id];
+        if (group) {
+          group.position.set(translation.x, translation.y, translation.z);
+          group.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
+        }
+      });
+    });
+
     return () => {
       tfListener.unsubscribe();
+      tfStaticListener.unsubscribe();
     };
   }, [ros]);
 
