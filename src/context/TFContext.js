@@ -22,7 +22,7 @@ export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
         const { translation, rotation } = transform.transform;
         const { child_frame_id } = transform;
 
-        console.log("Dynamic Transform:", transform);
+        // console.log("Dynamic Transform:", transform);
 
         // If "odom" frame, update camera origin
         if (child_frame_id === "odom" && cameraRef.current) {
@@ -80,7 +80,7 @@ export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
         const { translation, rotation } = transform.transform;
         const { child_frame_id } = transform;
 
-        console.log("Static Transform:", transform);
+        // console.log("Static Transform:", transform);
 
         // Manage TF groups in the scene
         if (!tfGroupsRef.current[child_frame_id]) {
