@@ -2,7 +2,9 @@ import React, { createContext, useEffect, useRef } from "react";
 import ROSLIB from "roslib";
 import * as THREE from "three";
 
-export const TFContext = createContext();
+// export const TFContext = createContext();
+export const TFContext = createContext(undefined);
+
 
 export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
   const tfGroupsRef = useRef({});
@@ -131,3 +133,4 @@ export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
     </TFContext.Provider>
   );
 };
+

@@ -7,7 +7,7 @@ import VirtualJoystick from "./context/VirtualJoystick";
 import { LidarContext } from "./context/LidarContext";
 import { CameraContext } from "./context/CameraContext";
 import { MapProvider, MapContext } from "./context/MapContext";
-import { TFProvider } from "./context/TFContext";
+import { TFContext, TFProvider } from "./context/TFContext";
 
 import * as THREE from "three";
 
@@ -23,9 +23,13 @@ function App() {
   const rendererRef = useRef(null);
 
   const { mapData } = useContext(MapContext);
+  const { frameData } = useContext(TFContext);
+  const { tfGroupsRef } = useContext(TFContext); // Access TFContext
   const mapMeshRef = useRef(null);
 
   const camHigh = 8;
+
+  const frameId = "base_footpirnt";
 
   // Map Visualization Effect
   useEffect(() => {
@@ -97,6 +101,8 @@ function App() {
     scene.add(lidarPoints);
     lidarPointsRef.current = lidarGeometry;
 
+    console.log(frameData);
+
     const animate = () => {
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
@@ -128,6 +134,24 @@ function App() {
     }
   }, [cameraPosition, cameraRotation]);
 
+  useEffect(() => {
+    
+    const interval = setInterval(() => {
+      const group = tfGroupsRef.current[frameId];
+
+      if (group) {
+        console.log(tfGroupsRef);
+        console.log(`Frame: ${frameId}`);
+        console.log("Position:", group.position);
+        console.log("Rotation (Quaternion):", group.quaternion);
+      } else {
+        console.log(`Frame '${frameId}' not found.`);
+      }
+    }, 1000); // Check every 1 second
+
+    return () => clearInterval(interval);
+  }, [frameId, tfGroupsRef]);
+
   const handleJoystickMove = ({ linear, angular }) => {
     console.log(`Linear: ${linear}, Angular: ${angular}`);
   };
@@ -150,6 +174,6 @@ function App() {
       </div>
     </TFProvider>
   );
-}
+};
 
 export default App;

@@ -39,7 +39,7 @@ const NavPanel = () => {
     // Create a topic object
     const topic = new ROSLIB.Topic({
       ros: ros,
-      name: "/mode",
+      name: "/change_mode",
       messageType: "std_msgs/String",
     });
 
