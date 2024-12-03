@@ -23,7 +23,7 @@ function App() {
   const rendererRef = useRef(null);
 
   const { mapData } = useContext(MapContext);
-  const { tfGroupsRef } = useContext(TFContext); // Access TFContext
+  const  tfGroupsRef = useContext(TFContext); // Access TFContext
   const mapMeshRef = useRef(null);
 
   const camHigh = 8;
