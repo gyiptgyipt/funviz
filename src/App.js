@@ -23,12 +23,35 @@ function App() {
   const rendererRef = useRef(null);
 
   const { mapData } = useContext(MapContext);
-  const  tfGroupsRef = useContext(TFContext); // Access TFContext
+  const { getTFFrameData } = useContext(TFContext); // Access getTFFrameData function
+  const { tfGroupsRef } = useContext(TFContext);
   const mapMeshRef = useRef(null);
 
   const camHigh = 8;
 
-  const frameId = "odom"; // Example frameId
+  const frameId = "odom"; // Frame to monitor
+
+  // Monitor specific TF frame (e.g., "odom")
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (getTFFrameData) {
+        const frameData = getTFFrameData(frameId);
+        console.log(frameData);
+        if (frameData) {
+          const { position, quaternion } = frameData;
+          console.log(`Frame ${frameId}:`);
+          console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
+          console.log(
+            `Rotation (Quaternion) - x: ${quaternion.x}, y: ${quaternion.y}, z: ${quaternion.z}, w: ${quaternion.w}`
+          );
+        } else {
+          console.log(`Frame ${frameId} not found.`);
+        }
+      }
+    }, 1000); // Check every second
+
+    return () => clearInterval(interval); // Cleanup
+  }, [getTFFrameData, frameId , tfGroupsRef]);
 
   // Map Visualization Effect
   useEffect(() => {
@@ -129,23 +152,6 @@ function App() {
     }
   }, [cameraPosition, cameraRotation]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Check if tfGroupsRef.current is valid before accessing it
-      console.log(tfGroupsRef.current);
-      if (tfGroupsRef.current && tfGroupsRef.current[frameId]) {
-        const group = tfGroupsRef.current[frameId];
-        console.log("Rotation (Quaternion):", group.quaternion);
-        console.log(`Frame: ${frameId}`);
-        console.log("Position:", group.position);
-      } else {
-        console.log(`Frame '${frameId}' not found or tfGroupsRef is null.`);
-      }
-    }, 1000); // Check every 1 second
-  
-    return () => clearInterval(interval);
-  }, [frameId, tfGroupsRef]);
-  
 
   const handleJoystickMove = ({ linear, angular }) => {
     console.log(`Linear: ${linear}, Angular: ${angular}`);

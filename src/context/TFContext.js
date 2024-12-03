@@ -1,10 +1,8 @@
-import React, { createContext, useEffect, useRef } from "react";
+import React, { createContext, useEffect, useRef, useCallback } from "react";
 import ROSLIB from "roslib";
 import * as THREE from "three";
 
-// export const TFContext = createContext();
-export const TFContext = createContext(undefined);
-
+export const TFContext = createContext();
 
 export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
   const tfGroupsRef = useRef({});
@@ -24,13 +22,6 @@ export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
         const { translation, rotation } = transform.transform;
         const { child_frame_id } = transform;
 
-        // console.log("Dynamic Transform:", transform);
-
-        // If "odom" frame, update camera origin
-        if (child_frame_id === "odom" && cameraRef.current) {
-          const camera = cameraRef.current;
-          camera.position.set(translation.x, translation.y, 8); // 8 is camera height
-        }
 
         // Manage TF groups in the scene
         if (!tfGroupsRef.current[child_frame_id]) {
@@ -82,8 +73,6 @@ export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
         const { translation, rotation } = transform.transform;
         const { child_frame_id } = transform;
 
-        // console.log("Static Transform:", transform);
-
         // Manage TF groups in the scene
         if (!tfGroupsRef.current[child_frame_id]) {
           const group = new THREE.Group();
@@ -118,6 +107,9 @@ export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
           group.position.set(translation.x, translation.y, translation.z);
           group.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
         }
+
+        const tf_test = getTFFrameData("base_footprint");
+        console.log(tf_test);
       });
     });
 
@@ -127,8 +119,23 @@ export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
     };
   }, [ros]);
 
+  // Function to get specific TF frame data
+  const getTFFrameData = useCallback(
+    (frameId) => {
+      const frame = tfGroupsRef.current[frameId];
+      if (frame) {
+        return {
+          position: frame.position,
+          quaternion: frame.quaternion,
+        };
+      }
+      return null;
+    },
+    [tfGroupsRef]
+  );
+
   return (
-    <TFContext.Provider value={{ tfGroupsRef }}>
+    <TFContext.Provider value={{ tfGroupsRef, getTFFrameData }}>
       {children}
     </TFContext.Provider>
   );
