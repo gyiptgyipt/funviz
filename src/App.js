@@ -23,13 +23,12 @@ function App() {
   const rendererRef = useRef(null);
 
   const { mapData } = useContext(MapContext);
-  const { frameData } = useContext(TFContext);
   const { tfGroupsRef } = useContext(TFContext); // Access TFContext
   const mapMeshRef = useRef(null);
 
   const camHigh = 8;
 
-  const frameId = "base_footpirnt";
+  const frameId = "odom"; // Example frameId
 
   // Map Visualization Effect
   useEffect(() => {
@@ -59,7 +58,7 @@ function App() {
     });
 
     mapGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-    mapMesh.position.set(0, 0, 0);                // tf map frame position ထည့်ရန်
+    mapMesh.position.set(0, 0, 0);
 
     if (mapMeshRef.current) {
       sceneRef.current.remove(mapMeshRef.current);
@@ -81,8 +80,6 @@ function App() {
     mountRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // camera.position.set(cameraPosition.x, cameraPosition.y, camHigh);
-
     const gridHelper = new THREE.GridHelper(8, 8, 0x000000, 0x000000);
     gridHelper.rotation.x = Math.PI / 2;
     gridHelper.position.set(0, 0, 0);
@@ -100,8 +97,6 @@ function App() {
     const lidarPoints = new THREE.Points(lidarGeometry, lidarMaterial);
     scene.add(lidarPoints);
     lidarPointsRef.current = lidarGeometry;
-
-    console.log(frameData);
 
     const animate = () => {
       requestAnimationFrame(animate);
@@ -135,22 +130,22 @@ function App() {
   }, [cameraPosition, cameraRotation]);
 
   useEffect(() => {
-    
     const interval = setInterval(() => {
-      const group = tfGroupsRef.current[frameId];
-
-      if (group) {
-        console.log(tfGroupsRef);
+      // Check if tfGroupsRef.current is valid before accessing it
+      console.log(tfGroupsRef.current);
+      if (tfGroupsRef.current && tfGroupsRef.current[frameId]) {
+        const group = tfGroupsRef.current[frameId];
+        console.log("Rotation (Quaternion):", group.quaternion);
         console.log(`Frame: ${frameId}`);
         console.log("Position:", group.position);
-        console.log("Rotation (Quaternion):", group.quaternion);
       } else {
-        console.log(`Frame '${frameId}' not found.`);
+        console.log(`Frame '${frameId}' not found or tfGroupsRef is null.`);
       }
     }, 1000); // Check every 1 second
-
+  
     return () => clearInterval(interval);
   }, [frameId, tfGroupsRef]);
+  
 
   const handleJoystickMove = ({ linear, angular }) => {
     console.log(`Linear: ${linear}, Angular: ${angular}`);
@@ -174,6 +169,6 @@ function App() {
       </div>
     </TFProvider>
   );
-};
+}
 
 export default App;
