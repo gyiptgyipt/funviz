@@ -22,4 +22,5 @@ ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 
 -   to adjust tf_position and camera,animation 
 -   to build odom,map pos
--   
+-   to change quaternion to euler in camera (odom_data)
+-   to adjust grid helper position 

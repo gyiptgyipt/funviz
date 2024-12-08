@@ -164,7 +164,19 @@ function App() {
       camera.position.set(cameraPosition.x, cameraPosition.y, camHigh);
       camera.rotation.set(0, 0, cameraRotation.x);
     }
-  }, [cameraPosition, cameraRotation]);
+
+    if (odomData) {
+      const { position, orientation } = odomData;
+      // console.log("Odometry Data:");
+      // console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
+      // console.log();
+      //   `Orientation (Quaternion) - x: ${orientation.x}, y: ${orientation.y}, z: ${orientation.z}, w: ${orientation.w}`
+      camera.position.set(position.x, position.y , camHigh);
+      camera.rotation.set(orientation.x , orientation.y , orientation.z);
+      
+    }
+    
+  }, [cameraPosition, cameraRotation ,odomData]);
 
 
   const handleJoystickMove = ({ linear, angular }) => {
