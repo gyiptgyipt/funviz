@@ -4,7 +4,7 @@ import * as THREE from "three";
 
 export const TFContext = createContext();
 
-export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
+export const TFProvider = ({ ros, sceneRef, children }) => {
   const tfGroupsRef = useRef({});
 
   useEffect(() => {
@@ -108,8 +108,8 @@ export const TFProvider = ({ ros, sceneRef, cameraRef, children }) => {
           group.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
         }
 
-        const tf_test = getTFFrameData("base_footprint");
-        console.log(tf_test);
+        // const tf_test = getTFFrameData("base_footprint");
+        // console.log(tf_test);
       });
     });
 

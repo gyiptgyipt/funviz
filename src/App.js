@@ -8,6 +8,7 @@ import { LidarContext } from "./context/LidarContext";
 import { CameraContext } from "./context/CameraContext";
 import { MapProvider, MapContext } from "./context/MapContext";
 import { TFContext, TFProvider } from "./context/TFContext";
+import { OdomContext} from "./context/OdomContext"
 
 import * as THREE from "three";
 
@@ -26,32 +27,45 @@ function App() {
   const { getTFFrameData } = useContext(TFContext); // Access getTFFrameData function
   const { tfGroupsRef } = useContext(TFContext);
   const mapMeshRef = useRef(null);
+  const {odomData} = useContext(OdomContext);
 
   const camHigh = 8;
 
-  const frameId = "odom"; // Frame to monitor
 
-  // Monitor specific TF frame (e.g., "odom")
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (getTFFrameData) {
-        const frameData = getTFFrameData(frameId);
-        console.log(frameData);
-        if (frameData) {
-          const { position, quaternion } = frameData;
-          console.log(`Frame ${frameId}:`);
-          console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
-          console.log(
-            `Rotation (Quaternion) - x: ${quaternion.x}, y: ${quaternion.y}, z: ${quaternion.z}, w: ${quaternion.w}`
-          );
-        } else {
-          console.log(`Frame ${frameId} not found.`);
-        }
-      }
-    }, 1000); // Check every second
+    if (odomData) {
+      const { position, orientation } = odomData;
+      console.log("Odometry Data:");
+      console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
+      console.log(
+        `Orientation (Quaternion) - x: ${orientation.x}, y: ${orientation.y}, z: ${orientation.z}, w: ${orientation.w}`
+      );
+    }
+  }, [odomData]);
 
-    return () => clearInterval(interval); // Cleanup
-  }, [getTFFrameData, frameId , tfGroupsRef]);
+  // const frameId = "odom"; // Frame to monitor      // for TF Data (important)
+
+  // // Monitor specific TF frame (e.g., "odom")
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (getTFFrameData) {
+  //       const frameData = getTFFrameData(frameId);
+  //       console.log(frameData);
+  //       if (frameData) {
+  //         const { position, quaternion } = frameData;
+  //         console.log(`Frame ${frameId}:`);
+  //         console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
+  //         console.log(
+  //           `Rotation (Quaternion) - x: ${quaternion.x}, y: ${quaternion.y}, z: ${quaternion.z}, w: ${quaternion.w}`
+  //         );
+  //       } else {
+  //         console.log(`Frame ${frameId} not found.`);
+  //       }
+  //     }
+  //   }, 1000); // Check every second
+
+  //   return () => clearInterval(interval); // Cleanup
+  // }, [getTFFrameData, frameId , tfGroupsRef]);
 
   // Map Visualization Effect
   useEffect(() => {

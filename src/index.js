@@ -6,6 +6,7 @@ import { LidarProvider } from "./context/LidarContext";
 import { CameraProvider } from "./context/CameraContext";
 import { TFProvider , TFContext } from "./context/TFContext";
 import { MapProvider } from './context/MapContext';
+import { OdomProvider } from "./context/OdomContext";
 
 import { BrowserRouter } from "react-router-dom"; //navpanel
 
@@ -17,10 +18,12 @@ root.render(
       <LidarProvider>
       <CameraProvider>
         <MapProvider>
+          <OdomProvider>
           
       
     <App />
       
+    </OdomProvider>
       </MapProvider>
       </CameraProvider>
       </LidarProvider>
