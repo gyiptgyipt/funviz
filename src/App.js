@@ -11,6 +11,7 @@ import { TFContext, TFProvider } from "./context/TFContext";
 import { OdomContext} from "./context/OdomContext"
 
 import * as THREE from "three";
+import { Euler , Quaternion } from 'three';
 
 function App() {
   const ros = useContext(RosContext);
@@ -32,16 +33,16 @@ function App() {
   const camHigh = 8;
 
 
-  useEffect(() => {
-    if (odomData) {
-      const { position, orientation } = odomData;
-      console.log("Odometry Data:");
-      console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
-      console.log(
-        `Orientation (Quaternion) - x: ${orientation.x}, y: ${orientation.y}, z: ${orientation.z}, w: ${orientation.w}`
-      );
-    }
-  }, [odomData]);
+  // useEffect(() => { //check Odom data
+  //   if (odomData) {
+  //     const { position, orientation } = odomData;
+  //     console.log("Odometry Data:");
+  //     console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
+  //     console.log(
+  //       `Orientation (Quaternion) - x: ${orientation.x}, y: ${orientation.y}, z: ${orientation.z}, w: ${orientation.w}`
+  //     );
+  //   }
+  // }, [odomData]);
 
   // const frameId = "odom"; // Frame to monitor      // for TF Data (important)
 
@@ -165,16 +166,19 @@ function App() {
       camera.rotation.set(0, 0, cameraRotation.x);
     }
 
-    if (odomData) {
-      const { position, orientation } = odomData;
-      // console.log("Odometry Data:");
-      // console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
-      // console.log();
-      //   `Orientation (Quaternion) - x: ${orientation.x}, y: ${orientation.y}, z: ${orientation.z}, w: ${orientation.w}`
-      camera.position.set(position.x, position.y , camHigh);
-      camera.rotation.set(orientation.x , orientation.y , orientation.z);
+    // if (odomData) {
+    //   const { position, orientation } = odomData;
+    //   // console.log("Odometry Data:");
+    //   // console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
+    //   // console.log();
+    //   //   `Orientation (Quaternion) - x: ${orientation.x}, y: ${orientation.y}, z: ${orientation.z}, w: ${orientation.w}`
+    //   let quaternion = new Quaternion(odomData.orientation.x, odomData.orientation.y, odomData.orientation.z, odomData.orientation.w); // Identity quaternion
+    //   let euler = new Euler().setFromQuaternion(quaternion);
+    //   camera.position.set(position.x, position.y , camHigh);
+    //   console.log(euler);
+    //   camera.rotation.set(0 , 0 , euler.z);
       
-    }
+    // }
     
   }, [cameraPosition, cameraRotation ,odomData]);
 
