@@ -22,30 +22,14 @@ export const TFProvider = ({ ros, sceneRef, children }) => {
         const { translation, rotation } = transform.transform;
         const { child_frame_id } = transform;
 
-
         // Manage TF groups in the scene
         if (!tfGroupsRef.current[child_frame_id]) {
           const group = new THREE.Group();
           tfGroupsRef.current[child_frame_id] = group;
 
-          // Add visual indicators
-          const horizontalLine = new THREE.Line(
-            new THREE.BufferGeometry().setFromPoints([
-              new THREE.Vector3(0, 0, 0),
-              new THREE.Vector3(0.3, 0, 0),
-            ]),
-            new THREE.LineBasicMaterial({ color: 0xff0000 })
-          );
-          const verticalLine = new THREE.Line(
-            new THREE.BufferGeometry().setFromPoints([
-              new THREE.Vector3(0, 0, 0),
-              new THREE.Vector3(0, 0.3, 0),
-            ]),
-            new THREE.LineBasicMaterial({ color: 0x00ff00 })
-          );
-
-          group.add(horizontalLine);
-          group.add(verticalLine);
+          // Add AxesHelper for visualizing the orientation
+          const axesHelper = new THREE.AxesHelper(0.3); // Length of the axes
+          group.add(axesHelper);
 
           if (sceneRef.current) {
             sceneRef.current.add(group);
@@ -78,23 +62,9 @@ export const TFProvider = ({ ros, sceneRef, children }) => {
           const group = new THREE.Group();
           tfGroupsRef.current[child_frame_id] = group;
 
-          const horizontalLine = new THREE.Line(
-            new THREE.BufferGeometry().setFromPoints([
-              new THREE.Vector3(0, 0, 0),
-              new THREE.Vector3(0.3, 0, 0),
-            ]),
-            new THREE.LineBasicMaterial({ color: 0xff0000 })
-          );
-          const verticalLine = new THREE.Line(
-            new THREE.BufferGeometry().setFromPoints([
-              new THREE.Vector3(0, 0, 0),
-              new THREE.Vector3(0, 0.3, 0),
-            ]),
-            new THREE.LineBasicMaterial({ color: 0x00ff00 })
-          );
-
-          group.add(horizontalLine);
-          group.add(verticalLine);
+          // Add AxesHelper for visualizing the orientation
+          const axesHelper = new THREE.AxesHelper(0.3); // Length of the axes
+          group.add(axesHelper);
 
           if (sceneRef.current) {
             sceneRef.current.add(group);
@@ -107,9 +77,6 @@ export const TFProvider = ({ ros, sceneRef, children }) => {
           group.position.set(translation.x, translation.y, translation.z);
           group.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
         }
-
-        // const tf_test = getTFFrameData("base_footprint");
-        // console.log(tf_test);
       });
     });
 
