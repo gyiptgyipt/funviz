@@ -166,19 +166,19 @@ function App() {
       camera.rotation.set(0, 0, cameraRotation.x);
     }
 
-    // if (odomData) {
-    //   const { position, orientation } = odomData;
-    //   // console.log("Odometry Data:");
-    //   // console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
-    //   // console.log();
-    //   //   `Orientation (Quaternion) - x: ${orientation.x}, y: ${orientation.y}, z: ${orientation.z}, w: ${orientation.w}`
-    //   let quaternion = new Quaternion(odomData.orientation.x, odomData.orientation.y, odomData.orientation.z, odomData.orientation.w); // Identity quaternion
-    //   let euler = new Euler().setFromQuaternion(quaternion);
-    //   camera.position.set(position.x, position.y , camHigh);
-    //   console.log(euler);
-    //   camera.rotation.set(0 , 0 , euler.z);
+    if (odomData) {
+      const { position, orientation } = odomData;
+      // console.log("Odometry Data:");
+      // console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
+      // console.log();
+      //   `Orientation (Quaternion) - x: ${orientation.x}, y: ${orientation.y}, z: ${orientation.z}, w: ${orientation.w}`
+      let quaternion = new Quaternion(odomData.orientation.x, odomData.orientation.y, odomData.orientation.z, odomData.orientation.w); // Identity quaternion
+      let euler = new Euler().setFromQuaternion(quaternion);
+      camera.position.set(position.x, position.y , camHigh);
+      console.log(euler);
+      camera.rotation.set(0 , 0 , 0);
       
-    // }
+    }
     
   }, [cameraPosition, cameraRotation ,odomData]);
 
