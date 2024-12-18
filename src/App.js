@@ -8,10 +8,10 @@ import { LidarContext } from "./context/LidarContext";
 import { CameraContext } from "./context/CameraContext";
 import { MapProvider, MapContext } from "./context/MapContext";
 import { TFContext, TFProvider } from "./context/TFContext";
-import { OdomContext} from "./context/OdomContext"
+import { OdomContext } from "./context/OdomContext"
 
 import * as THREE from "three";
-import { Euler , Quaternion } from 'three';
+import { Euler, Quaternion } from 'three';
 
 function App() {
   const ros = useContext(RosContext);
@@ -28,45 +28,10 @@ function App() {
   const { getTFFrameData } = useContext(TFContext); // Access getTFFrameData function
   const { tfGroupsRef } = useContext(TFContext);
   const mapMeshRef = useRef(null);
-  const {odomData} = useContext(OdomContext);
+  const { odomData } = useContext(OdomContext);
 
+  const gridHelperRef = useRef(null);
   const camHigh = 8;
-
-
-  // useEffect(() => { //check Odom data
-  //   if (odomData) {
-  //     const { position, orientation } = odomData;
-  //     console.log("Odometry Data:");
-  //     console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
-  //     console.log(
-  //       `Orientation (Quaternion) - x: ${orientation.x}, y: ${orientation.y}, z: ${orientation.z}, w: ${orientation.w}`
-  //     );
-  //   }
-  // }, [odomData]);
-
-  // const frameId = "odom"; // Frame to monitor      // for TF Data (important)
-
-  // // Monitor specific TF frame (e.g., "odom")
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (getTFFrameData) {
-  //       const frameData = getTFFrameData(frameId);
-  //       console.log(frameData);
-  //       if (frameData) {
-  //         const { position, quaternion } = frameData;
-  //         console.log(`Frame ${frameId}:`);
-  //         console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
-  //         console.log(
-  //           `Rotation (Quaternion) - x: ${quaternion.x}, y: ${quaternion.y}, z: ${quaternion.z}, w: ${quaternion.w}`
-  //         );
-  //       } else {
-  //         console.log(`Frame ${frameId} not found.`);
-  //       }
-  //     }
-  //   }, 1000); // Check every second
-
-  //   return () => clearInterval(interval); // Cleanup
-  // }, [getTFFrameData, frameId , tfGroupsRef]);
 
   // Map Visualization Effect
   useEffect(() => {
@@ -96,7 +61,7 @@ function App() {
     });
 
     mapGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-    mapMesh.position.set(0, 0, 0);
+    mapMesh.position.set(0, 0, 0);                // map tf position ထည့်ရန်
 
     if (mapMeshRef.current) {
       sceneRef.current.remove(mapMeshRef.current);
@@ -122,6 +87,7 @@ function App() {
     gridHelper.rotation.x = Math.PI / 2;
     gridHelper.position.set(0, 0, 0);
     scene.add(gridHelper);
+    gridHelperRef.current = gridHelper;
 
     const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -163,25 +129,23 @@ function App() {
     const camera = cameraRef.current;
     if (camera) {
       camera.position.set(cameraPosition.x, cameraPosition.y, camHigh);
-      camera.rotation.set(0, 0, cameraRotation.x);
+      camera.rotation.set(0, 0, 0);
     }
 
     if (odomData) {
       const { position, orientation } = odomData;
-      // console.log("Odometry Data:");
-      // console.log(`Position - x: ${position.x}, y: ${position.y}, z: ${position.z}`);
-      // console.log();
-      //   `Orientation (Quaternion) - x: ${orientation.x}, y: ${orientation.y}, z: ${orientation.z}, w: ${orientation.w}`
-      let quaternion = new Quaternion(odomData.orientation.x, odomData.orientation.y, odomData.orientation.z, odomData.orientation.w); // Identity quaternion
+      let quaternion = new Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
       let euler = new Euler().setFromQuaternion(quaternion);
-      camera.position.set(position.x, position.y , camHigh);
-      console.log(euler);
-      camera.rotation.set(0 , 0 , 0);
-      
-    }
-    
-  }, [cameraPosition, cameraRotation ,odomData]);
 
+      if (gridHelperRef.current) {
+        gridHelperRef.current.position.set(position.x, position.y, 0);
+        gridHelperRef.current.rotation.set(Math.PI / 2 , 0, 0);
+      }
+
+      camera.position.set(position.x, position.y, camHigh);
+      camera.rotation.set(0, 0, 0);
+    }
+  }, [cameraPosition, cameraRotation, odomData]);
 
   const handleJoystickMove = ({ linear, angular }) => {
     console.log(`Linear: ${linear}, Angular: ${angular}`);
